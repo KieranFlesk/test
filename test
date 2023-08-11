@@ -1,0 +1,28 @@
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract TokenTransferContract {
+    address public owner;
+    IERC20 public token;
+
+    constructor(address _tokenAddress) {
+        owner = msg.sender;
+        token = IERC20(_tokenAddress);
+    }
+
+    function transferTokens(address recipient, uint256 amount) external {
+        require(msg.sender == owner, "Only the owner can call this function");
+        token.transfer(recipient, amount);
+    }
+
+    function clawbackTransaction(address recipient, uint256 amount) external {
+        require(msg.sender == owner, "Only the owner can call this function");
+        require(token.balanceOf(address(this)) >= amount, "Insufficient contract balance");
+        token.transferFrom(recipient, address(this), amount);
+    }
+
+    function getContractBalance() external view returns (uint256) {
+        return token.balanceOf(address(this));
+    }
+}
